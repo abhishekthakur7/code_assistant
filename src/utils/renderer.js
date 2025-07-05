@@ -506,9 +506,17 @@ async function startCapture(screenshotIntervalSeconds = 5, imageQuality = 'mediu
             // Setup audio processing for Windows loopback audio (interviewer)
             setupWindowsLoopbackProcessing();
             
-            // Also start microphone capture for interviewee audio
-            console.log('🎤 Starting dual audio capture (loopback + microphone)');
-            await startMicrophoneCapture();
+            // Check if microphone should be started based on UI state
+            // Get microphone state from the AssistantView component
+            const assistantView = document.querySelector('assistant-view');
+            const shouldStartMicrophone = assistantView ? assistantView.isMicrophoneActive : false;
+            
+            if (shouldStartMicrophone) {
+                console.log('🎤 Starting dual audio capture (loopback + microphone)');
+                await startMicrophoneCapture();
+            } else {
+                console.log('🎤 Microphone disabled - starting loopback audio only');
+            }
         }
 
         console.log('MediaStream obtained:', {
@@ -658,6 +666,11 @@ async function startMicrophoneCapture() {
         const SEND_TIMEOUT = 3000; // Send after 3 seconds even if buffer not full
 
         micAudioProcessor.onaudioprocess = e => {
+            // Only process audio if microphone capture is active
+            if (!isMicrophoneCaptureActive) {
+                return;
+            }
+            
             const inputData = e.inputBuffer.getChannelData(0);
             
             // Apply gain boost to amplify microphone signal

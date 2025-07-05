@@ -663,6 +663,28 @@ function setupGeminiIpcHandlers(geminiSessionRef) {
         const session = await initializeGeminiSession(apiKey, customPrompt, profile, language);
         if (session) {
             geminiSessionRef.current = session;
+            
+            // Send custom prompt as initial message if provided
+            if (customPrompt && customPrompt.trim().length > 0) {
+                try {
+                    console.log('Sending custom prompt as initial message:', customPrompt);
+                    // Add a small delay to ensure session is fully ready
+                    setTimeout(async () => {
+                        try {
+                            // Set expectingManualResponse to true so the response is processed
+                            expectingManualResponse = true;
+                            messageBuffer = '';
+                            await geminiSessionRef.current.sendRealtimeInput({ text: customPrompt.trim() });
+                        } catch (error) {
+                            console.error('Error sending custom prompt:', error);
+                            expectingManualResponse = false; // Reset on error
+                        }
+                    }, 1000); // 1 second delay
+                } catch (error) {
+                    console.error('Error setting up custom prompt sending:', error);
+                }
+            }
+            
             return true;
         }
         return false;
@@ -1060,9 +1082,14 @@ function setupGeminiIpcHandlers(geminiSessionRef) {
             // Reinitialize Gemini session with updated system prompt if we have stored params
             if (lastSessionParams) {
                 console.log('Reinitializing Gemini session with updated system prompt...');
+                
+                // Get the current custom prompt from localStorage
+                const currentCustomPrompt = await getStoredSetting('customPrompt', '') || '';
+                console.log('Using current custom prompt from localStorage:', currentCustomPrompt ? 'Custom prompt found' : 'No custom prompt');
+                
                 const session = await initializeGeminiSession(
                     lastSessionParams.apiKey,
-                    lastSessionParams.customPrompt,
+                    currentCustomPrompt, // Use current custom prompt instead of stored one
                     lastSessionParams.profile,
                     lastSessionParams.language,
                     false // Not a reconnection, force new session
