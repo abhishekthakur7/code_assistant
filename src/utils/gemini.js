@@ -875,7 +875,7 @@ function setupGeminiIpcHandlers(geminiSessionRef) {
             // Build context with proper speaker labels
             let contextMessage = '';
             let wordCount = 0;
-            const maxWords = 500;
+            const maxWords = 1000;
             
             if (recentTranscriptions.length > 0) {
                 // Format transcriptions with proper labels
@@ -976,7 +976,7 @@ function setupGeminiIpcHandlers(geminiSessionRef) {
             // Build context with proper speaker labels
             let contextMessage = '';
             let wordCount = 0;
-            const maxWords = 500;
+            const maxWords = 1000;
             
             if (recentTranscriptions.length > 0) {
                 // Format transcriptions with proper labels
